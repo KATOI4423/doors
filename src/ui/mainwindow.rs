@@ -18,6 +18,8 @@ impl Render for MainWindow {
             .bg(rgb(0xffffff) /* White */)
             .items_center()
             .justify_center()
+            .flex_col()
+            .child(MainWindow::render_menu_bar())
             .child("Hello, Doors!")
     }
 }
@@ -32,5 +34,13 @@ impl MainWindow {
                 eprintln!("Failed to open window: {}", e);
             }
         });
+    }
+
+    fn render_menu_bar() -> impl IntoElement {
+        div()
+            .flex()
+            .flex_row()
+            .h(px(28.0))
+            .child("Menu Bar")
     }
 }
