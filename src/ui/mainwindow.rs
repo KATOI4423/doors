@@ -15,6 +15,7 @@ impl Render for MainWindow {
         div()
             .size_full()
             .flex()
+            .bg(rgb(0xffffff) /* White */)
             .items_center()
             .justify_center()
             .child("Hello, Doors!")
