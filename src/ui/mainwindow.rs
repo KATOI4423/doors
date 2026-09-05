@@ -17,7 +17,6 @@ impl Render for MainWindow {
             .flex()
             .bg(rgb(0xffffff) /* White */)
             .items_center()
-            .justify_center()
             .flex_col()
             .child(MainWindow::render_menu_bar())
             .child("Hello, Doors!")
