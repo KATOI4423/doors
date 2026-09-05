@@ -1,0 +1,23 @@
+[package]
+name = "doors"
+version = "0.0.0"
+edition = "2024"
+description = "A tab-oriented file manager."
+license = "Apache-2.0"
+repository = "https://github.com/KATOI4423/doors"
+readme = "README.md"
+categories = ["filesystem", "gui"]
+keywords = ["file-manager", "file-explorer", "file-browser", "tabbed", "tabs", "workspace"]
+
+[profile.dev]
+opt-level = 0
+debug = true
+incremental = true
+
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1
+strip = "symbols"
+
+[dependencies]
