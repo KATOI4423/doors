@@ -1,3 +1,9 @@
+//! # main.rs
+//!
+//! Entry point for the Doors application.
+
+mod ui;
+
 fn main() {
-    println!("Hello, world!");
+    ui::MainWindow::start();
 }
