@@ -19,7 +19,7 @@ impl Render for MainWindow {
             .items_center()
             .flex_col()
             .child(MainWindow::render_menu_bar())
-            .child("Hello, Doors!")
+            .child(MainWindow::render_main_content())
     }
 }
 
@@ -41,5 +41,11 @@ impl MainWindow {
             .flex_row()
             .h(px(28.0))
             .child("Menu Bar")
+    }
+
+    fn render_main_content() -> impl IntoElement {
+        div()
+            .flex()
+            .child("Main Content")
     }
 }
