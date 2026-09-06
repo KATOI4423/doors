@@ -13,6 +13,12 @@ enum MenuBarState {
     HelpOpen,
 }
 
+impl MenuBarState {
+    pub fn close(&mut self) {
+        *self = Self::AllClosed;
+    }
+}
+
 pub struct MenuBar {
     state: MenuBarState,
 }
@@ -42,7 +48,7 @@ impl MenuBar {
                     .child("Help")
                     .on_click(cx.listener(|this, _, _, _| {
                         if this.state == MenuBarState::HelpOpen {
-                            this.state = MenuBarState::AllClosed;
+                            this.state.close();
                         } else {
                             this.state = MenuBarState::HelpOpen;
                         }
@@ -66,7 +72,7 @@ impl MenuBar {
                                 .py_2()
                                 .child("Read Me")
                                 .on_click(cx.listener(|this, _, _, _| {
-                                    this.state = MenuBarState::AllClosed;
+                                    this.state.close();
                                     let _ = webbrowser::open(std::env!("CARGO_PKG_REPOSITORY"));
                                 }))
                         )
@@ -77,7 +83,7 @@ impl MenuBar {
                                 .py_2()
                                 .child("Version")
                                 .on_click(cx.listener(|this, _, window, cx| {
-                                    this.state = MenuBarState::AllClosed;
+                                    this.state.close();
                                     window.dispatch_action(Box::new(ShowAbout), cx);
                                 }))
                         ),
