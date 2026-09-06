@@ -4,6 +4,8 @@
 
 use gpui::*;
 
+use crate::ui::menubar;
+
 pub struct MainWindow;
 
 impl Render for MainWindow {
@@ -18,7 +20,7 @@ impl Render for MainWindow {
             .bg(rgb(0xffffff) /* White */)
             .items_center()
             .flex_col()
-            .child(MainWindow::render_menu_bar())
+            .child(menubar::MenuBar::into_element())
             .child(MainWindow::render_main_content())
     }
 }
@@ -33,17 +35,6 @@ impl MainWindow {
                 eprintln!("Failed to open window: {}", e);
             }
         });
-    }
-
-    fn render_menu_bar() -> impl IntoElement {
-        div()
-            .flex()
-            .flex_row()
-            .h(px(28.0))
-            .child("Menu Bar")
-            .on_mouse_down(MouseButton::Left, |event, window, cx | {
-                AboutWindow::show_about(&ShowAbout, cx);
-            })
     }
 
     fn render_main_content() -> impl IntoElement {
