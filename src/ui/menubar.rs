@@ -4,6 +4,7 @@
 
 use gpui::*;
 use gpui::prelude::FluentBuilder;
+use webbrowser;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 enum MenuBarState {
@@ -58,7 +59,11 @@ impl MenuBar {
                                 .id("read-me")
                                 .px_3()
                                 .py_2()
-                                .child("Read Me"),
+                                .child("Read Me")
+                                .on_click(cx.listener(|this, _, _, _| {
+                                    this.state = MenuBarState::AllClosed;
+                                    let _ = webbrowser::open(std::env!("CARGO_PKG_REPOSITORY"));
+                                }))
                         )
                         .child(
                             div()
