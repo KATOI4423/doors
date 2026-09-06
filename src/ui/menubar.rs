@@ -4,6 +4,7 @@
 
 use gpui::*;
 use gpui::prelude::FluentBuilder;
+use heck::ToTitleCase;
 use webbrowser;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -21,6 +22,10 @@ impl MenuBar {
         Self {
             state: MenuBarState::AllClosed,
         }
+    }
+
+    pub fn register_actions(cx: &mut App) {
+        cx.on_action(AboutWindow::show);
     }
 
     fn create_help_menu(&mut self, cx: &mut Context<Self>) -> impl IntoElement {
@@ -70,7 +75,11 @@ impl MenuBar {
                                 .id("version")
                                 .px_3()
                                 .py_2()
-                                .child("Version"),
+                                .child("Version")
+                                .on_click(cx.listener(|this, _, window, cx| {
+                                    this.state = MenuBarState::AllClosed;
+                                    window.dispatch_action(Box::new(ShowAbout), cx);
+                                }))
                         ),
                 )
             })
@@ -92,5 +101,79 @@ impl Render for MenuBar {
             .gap_4()
             .child("Menu Bar 1")
             .child(self.create_help_menu(cx))
+    }
+}
+
+actions!(menubar, [
+    ShowAbout,
+]);
+
+struct AboutWindow;
+
+impl Render for AboutWindow {
+    fn render(&mut self, _window: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
+        div()
+            .size_full()
+            .bg(rgb(0x202020))
+            .flex()
+            .flex_col()
+            .items_center()
+            .justify_center()
+            .gap_2()
+            .text_color(rgb(0xeeeeee))
+            .child(
+                div()
+                    .text_xl()
+                    .child(std::env!("CARGO_PKG_NAME").to_title_case()) // 先頭を大文字にする
+            )
+            .child(
+                div()
+                    .whitespace_nowrap()
+                    .child(format!("Version: {}", std::env!("CARGO_PKG_VERSION")))
+            )
+            .child(
+                div()
+                    .whitespace_nowrap()
+                    .child(format!("Target: {}", std::env!("VERGEN_CARGO_TARGET_TRIPLE")))
+            )
+            .child(
+                div()
+                    .whitespace_nowrap()
+                    .child(format!("Built at {}", std::env!("VERGEN_BUILD_TIMESTAMP")))
+            )
+            .child(
+                div()
+                    .whitespace_nowrap()
+                    .child(format!("Commit: {}", std::option_env!("VERGEN_GIT_SHA").unwrap_or("unknown")))
+            )
+            .child(
+                div()
+                    .whitespace_nowrap()
+                    .child(format!("by Rust {}", std::env!("VERGEN_RUSTC_SEMVER")))
+            )
+    }
+}
+
+impl AboutWindow {
+    pub fn show(_: &ShowAbout, cx: &mut App) {
+        let bounds = Bounds::centered(
+            None,
+            size(px(500.0), px(250.0)), // TODO: サイズを文字列・フォントに合わせて動的に変える
+            cx,
+        );
+
+        if let Err(e) = cx.open_window(
+            WindowOptions {
+                window_bounds: Some(WindowBounds::Windowed(bounds)),
+                titlebar: Some(TitlebarOptions {
+                    title: Some(format!("About {}", std::env!("CARGO_PKG_NAME").to_title_case()).into()),
+                    ..Default::default()
+                }),
+                ..Default::default()
+            },
+            |_, cx| cx.new(|_| AboutWindow),
+        ) {
+            eprintln!("Failed to show About Window: {e}")
+        }
     }
 }
