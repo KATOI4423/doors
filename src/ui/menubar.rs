@@ -4,10 +4,25 @@
 
 use gpui::*;
 
-pub struct MenuBar;
+enum MenuBarState {
+    AllClosed,
+    HelpOpen,
+}
+
+pub struct MenuBar {
+    state: MenuBarState,
+}
 
 impl MenuBar {
-    pub fn into_element() -> impl IntoElement {
+    pub fn new() -> Self {
+        Self {
+            state: MenuBarState::AllClosed,
+        }
+    }
+}
+
+impl Render for MenuBar {
+    fn render(&mut self, _window: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
         div()
             .flex()
             .flex_row()

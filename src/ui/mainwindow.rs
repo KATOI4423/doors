@@ -4,9 +4,11 @@
 
 use gpui::*;
 
-use crate::ui::menubar;
+use crate::ui::menubar::MenuBar;
 
-pub struct MainWindow;
+pub struct MainWindow {
+    menubar: Entity<MenuBar>,
+}
 
 impl Render for MainWindow {
     fn render(
@@ -20,17 +22,24 @@ impl Render for MainWindow {
             .bg(rgb(0xffffff) /* White */)
             .items_center()
             .flex_col()
-            .child(menubar::MenuBar::into_element())
+            .child(self.menubar.clone())
             .child(MainWindow::render_main_content())
     }
 }
 
 impl MainWindow {
+    fn new(cx: &mut Context<Self>) -> Self {
+        let menubar = cx.new(|_| MenuBar::new());
+        Self {
+            menubar,
+        }
+    }
+
     pub fn start() {
         Application::new().run(|cx| {
             if let Err(e) = cx.open_window(
                 WindowOptions::default(),
-                |_, cx| cx.new(|_| Self),
+                |_, cx| cx.new(|cx| Self::new(cx)),
             ) {
                 eprintln!("Failed to open window: {}", e);
             }
