@@ -5,8 +5,10 @@
 use gpui::*;
 
 use crate::ui::menubar::MenuBar;
+use crate::ui::titlebar::TitleBar;
 
 pub struct MainWindow {
+    titlebar: Entity<TitleBar>,
     menubar: Entity<MenuBar>,
 }
 
@@ -22,6 +24,7 @@ impl Render for MainWindow {
             .bg(rgb(0xffffff) /* White */)
             .items_center()
             .flex_col()
+            .child(self.titlebar.clone())
             .child(self.menubar.clone())
             .child(MainWindow::render_main_content())
     }
@@ -29,8 +32,10 @@ impl Render for MainWindow {
 
 impl MainWindow {
     fn new(cx: &mut Context<Self>) -> Self {
+        let titlebar = cx.new(|_| TitleBar::new());
         let menubar = cx.new(|_| MenuBar::new());
         Self {
+            titlebar,
             menubar,
         }
     }

@@ -4,5 +4,6 @@
 
 pub mod mainwindow;
 mod menubar;
+mod titlebar;
 
 pub type MainWindow = mainwindow::MainWindow;
