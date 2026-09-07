@@ -7,6 +7,8 @@ use gpui::prelude::FluentBuilder;
 use heck::ToTitleCase;
 use webbrowser;
 
+use crate::ui::titlebar::TitleBar;
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 enum MenuBarState {
     AllClosed,
@@ -114,7 +116,9 @@ actions!(menubar, [
     ShowAbout,
 ]);
 
-struct AboutWindow;
+struct AboutWindow {
+    titlebar: Entity<TitleBar>,
+}
 
 impl Render for AboutWindow {
     fn render(&mut self, _window: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
@@ -123,44 +127,59 @@ impl Render for AboutWindow {
             .bg(rgb(0x202020))
             .flex()
             .flex_col()
-            .items_center()
-            .justify_center()
-            .gap_2()
-            .text_color(rgb(0xeeeeee))
+            .child(self.titlebar.clone())
             .child(
                 div()
-                    .text_xl()
-                    .child(std::env!("CARGO_PKG_NAME").to_title_case()) // 先頭を大文字にする
-            )
-            .child(
-                div()
-                    .whitespace_nowrap()
-                    .child(format!("Version: {}", std::env!("CARGO_PKG_VERSION")))
-            )
-            .child(
-                div()
-                    .whitespace_nowrap()
-                    .child(format!("Target: {}", std::env!("VERGEN_CARGO_TARGET_TRIPLE")))
-            )
-            .child(
-                div()
-                    .whitespace_nowrap()
-                    .child(format!("Built at {}", std::env!("VERGEN_BUILD_TIMESTAMP")))
-            )
-            .child(
-                div()
-                    .whitespace_nowrap()
-                    .child(format!("Commit: {}", std::option_env!("VERGEN_GIT_SHA").unwrap_or("unknown")))
-            )
-            .child(
-                div()
-                    .whitespace_nowrap()
-                    .child(format!("by Rust {}", std::env!("VERGEN_RUSTC_SEMVER")))
+                    .flex_1()
+                    .flex()
+                    .flex_col()
+                    .items_center()
+                    .justify_center()
+                    .gap_2()
+                    .text_color(rgb(0xeeeeee))
+                    .child(
+                        div()
+                            .text_xl()
+                            .child(std::env!("CARGO_PKG_NAME").to_title_case()) // 先頭を大文字にする
+                    )
+                    .child(
+                        div()
+                            .whitespace_nowrap()
+                            .child(format!("Version: {}", std::env!("CARGO_PKG_VERSION")))
+                    )
+                    .child(
+                        div()
+                            .whitespace_nowrap()
+                            .child(format!("Target: {}", std::env!("VERGEN_CARGO_TARGET_TRIPLE")))
+                    )
+                    .child(
+                        div()
+                            .whitespace_nowrap()
+                            .child(format!("Built at {}", std::env!("VERGEN_BUILD_TIMESTAMP")))
+                    )
+                    .child(
+                        div()
+                            .whitespace_nowrap()
+                            .child(format!("Commit: {}", std::option_env!("VERGEN_GIT_SHA").unwrap_or("unknown")))
+                    )
+                    .child(
+                        div()
+                            .whitespace_nowrap()
+                            .child(format!("by Rust {}", std::env!("VERGEN_RUSTC_SEMVER")))
+                    )
             )
     }
 }
 
 impl AboutWindow {
+    pub fn new(cx: &mut Context<Self>) -> Self {
+        let titlebar = cx.new(|_| TitleBar::new());
+
+        Self {
+            titlebar,
+        }
+    }
+
     pub fn show(_: &ShowAbout, cx: &mut App) {
         let bounds = Bounds::centered(
             None,
@@ -171,13 +190,11 @@ impl AboutWindow {
         if let Err(e) = cx.open_window(
             WindowOptions {
                 window_bounds: Some(WindowBounds::Windowed(bounds)),
-                titlebar: Some(TitlebarOptions {
-                    title: Some(format!("About {}", std::env!("CARGO_PKG_NAME").to_title_case()).into()),
-                    ..Default::default()
-                }),
+                titlebar: None,
+                window_decorations: Some(WindowDecorations::Client),
                 ..Default::default()
             },
-            |_, cx| cx.new(|_| AboutWindow),
+            |_, cx| cx.new(Self::new),
         ) {
             eprintln!("Failed to show About Window: {e}")
         }
