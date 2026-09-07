@@ -121,53 +121,14 @@ struct AboutWindow {
 }
 
 impl Render for AboutWindow {
-    fn render(&mut self, _window: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
+    fn render(&mut self, _window: &mut Window, _cx: &mut Context<Self>) -> impl IntoElement {
         div()
             .size_full()
             .bg(rgb(0x202020))
             .flex()
             .flex_col()
             .child(self.titlebar.clone())
-            .child(
-                div()
-                    .flex_1()
-                    .flex()
-                    .flex_col()
-                    .items_center()
-                    .justify_center()
-                    .gap_2()
-                    .text_color(rgb(0xeeeeee))
-                    .child(
-                        div()
-                            .text_xl()
-                            .child(std::env!("CARGO_PKG_NAME").to_title_case()) // 先頭を大文字にする
-                    )
-                    .child(
-                        div()
-                            .whitespace_nowrap()
-                            .child(format!("Version: {}", std::env!("CARGO_PKG_VERSION")))
-                    )
-                    .child(
-                        div()
-                            .whitespace_nowrap()
-                            .child(format!("Target: {}", std::env!("VERGEN_CARGO_TARGET_TRIPLE")))
-                    )
-                    .child(
-                        div()
-                            .whitespace_nowrap()
-                            .child(format!("Built at {}", std::env!("VERGEN_BUILD_TIMESTAMP")))
-                    )
-                    .child(
-                        div()
-                            .whitespace_nowrap()
-                            .child(format!("Commit: {}", std::option_env!("VERGEN_GIT_SHA").unwrap_or("unknown")))
-                    )
-                    .child(
-                        div()
-                            .whitespace_nowrap()
-                            .child(format!("by Rust {}", std::env!("VERGEN_RUSTC_SEMVER")))
-                    )
-            )
+            .child(Self::render_content())
     }
 }
 
@@ -198,5 +159,46 @@ impl AboutWindow {
         ) {
             eprintln!("Failed to show About Window: {e}")
         }
+    }
+
+    fn render_content() -> impl IntoElement {
+        div()
+            .flex_1()
+            .flex()
+            .flex_col()
+            .items_center()
+            .justify_center()
+            .gap_2()
+            .text_color(rgb(0xeeeeee))
+            .child(
+                div()
+                    .text_xl()
+                    .child(std::env!("CARGO_PKG_NAME").to_title_case()) // 先頭を大文字にする
+            )
+            .child(
+                div()
+                    .whitespace_nowrap()
+                    .child(format!("Version: {}", std::env!("CARGO_PKG_VERSION")))
+            )
+            .child(
+                div()
+                    .whitespace_nowrap()
+                    .child(format!("Target: {}", std::env!("VERGEN_CARGO_TARGET_TRIPLE")))
+            )
+            .child(
+                div()
+                    .whitespace_nowrap()
+                    .child(format!("Built at {}", std::env!("VERGEN_BUILD_TIMESTAMP")))
+            )
+            .child(
+                div()
+                    .whitespace_nowrap()
+                    .child(format!("Commit: {}", std::option_env!("VERGEN_GIT_SHA").unwrap_or("unknown")))
+            )
+            .child(
+                div()
+                    .whitespace_nowrap()
+                    .child(format!("by Rust {}", std::env!("VERGEN_RUSTC_SEMVER")))
+            )
     }
 }
