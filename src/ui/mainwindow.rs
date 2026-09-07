@@ -44,10 +44,18 @@ impl MainWindow {
 
     pub fn start() {
         Application::new().run(|cx| {
+            eprintln!("GPUI compositer: {}", gpui::guess_compositor());
             MainWindow::register_actions(cx);
 
             if let Err(e) = cx.open_window(
-                WindowOptions::default(),
+                // GNOME wayland や Ghostty など、 xdg-decoration を実装していない環境では、
+                // WindowDecorations::Server (=Default) を使用するとタイトルバーが描画されない
+                // そのため、 WindowDecorations::Client (=独自実装) を選択する
+                WindowOptions {
+                    titlebar: None,
+                    window_decorations: Some(WindowDecorations::Client),
+                    ..Default::default()
+                },
                 |_, cx| cx.new(|cx| Self::new(cx)),
             ) {
                 eprintln!("Failed to open window: {}", e);
