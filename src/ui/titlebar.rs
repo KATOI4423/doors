@@ -2,37 +2,79 @@
 //!
 //! Define the title bar for the Doors application.
 
+use bitflags::bitflags;
 use gpui::*;
 use heck::ToTitleCase;
 
 pub struct TitleBar {
     title: SharedString,
+    flags: TitleBarFlags,
+}
+
+bitflags! {
+    #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+    pub struct TitleBarFlags: u32 {
+        const CloseButton =     0b0001;
+        const MaximizeButton =  0b0010;
+        const MinimizeButton =  0b0100;
+        const TitleName  =      0b1000;
+        /// # TitleName の BIT が立っていない場合は無効
+        const WindowMove =      0b0001_0000;
+    }
+}
+
+impl Default for TitleBarFlags {
+    fn default() -> Self {
+        Self::CloseButton |
+        Self::MaximizeButton |
+        Self::MinimizeButton |
+        Self::TitleName |
+        Self::WindowMove |
+        Self::empty() // Keep the trailing `|` style for minimal diffs.
+    }
 }
 
 impl Render for TitleBar {
     fn render(&mut self, window: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
-        div()
+        let mut content = div()
             .flex()
             .flex_row()
             .bg(rgb(0x000000))
             .text_color(rgb(0xeeeeee))
-            .items_center()
-            .justify_center()
             .h_8()
-            .w_full()
-            .pl_2()
-            .gap_4()
-            .child(self.render_drag_area(window, cx))
-            .child(Self::render_minimize_button(window, cx))
-            .child(Self::render_maximize_button(window, cx))
-            .child(Self::render_close_button(window, cx))
+            .w_full();
+
+        let mut title = if self.flags.contains(TitleBarFlags::TitleName) {
+                self.render_title_name(window, cx)
+                    .flex_1()
+        } else {
+            // コントロールボタンを右端へ押し出すために空白を挿入
+            div().flex_1()
+        };
+        if self.flags.contains(TitleBarFlags::WindowMove) {
+            title = title.on_mouse_down(MouseButton::Left, |_, window, _cx| {
+                window.start_window_move();
+            });
+        }
+        content = content.child(title);
+
+        // TODO: ダブルクリックで最大化・通常サイズ化
+
+        if self.flags.intersects(
+            TitleBarFlags::MinimizeButton | TitleBarFlags::MaximizeButton | TitleBarFlags::CloseButton
+        ) {
+            content = content.child(self.render_controls(window, cx));
+        }
+
+        content
     }
 }
 
 impl TitleBar {
-    pub fn new(title: impl Into<SharedString>) -> Self {
+    pub fn new(title: impl Into<SharedString>, flags: TitleBarFlags) -> Self {
         Self {
             title: title.into(),
+            flags,
         }
     }
 
@@ -95,21 +137,35 @@ impl TitleBar {
         })
     }
 
-    /// # Render dragable area
+    fn render_controls(&self, window: &Window, cx: &mut Context<Self>) -> impl IntoElement {
+        let mut controls = div()
+            .flex()
+            .flex_row()
+            .gap_4();
+
+        if self.flags.contains(TitleBarFlags::MinimizeButton) {
+            controls = controls.child(Self::render_minimize_button(window, cx))
+        }
+        if self.flags.contains(TitleBarFlags::MaximizeButton) {
+            controls = controls.child(Self::render_maximize_button(window, cx))
+        }
+        if self.flags.contains(TitleBarFlags::CloseButton) {
+            controls = controls.child(Self::render_close_button(window, cx))
+        }
+
+        controls
+    }
+
+    /// # Render Title Name
     ///
-    /// マウス移動可能なタイトル表示エリアを作成
-    fn render_drag_area(&self, _window: &Window, _cx: &mut Context<Self>) -> impl IntoElement {
+    /// タイトル表示エリアを作成
+    fn render_title_name(&self, _window: &Window, _cx: &mut Context<Self>) -> gpui::Div {
         div()
-            .flex_1()
             .h_full()
             .flex()
             .items_center()
             .pl_3()
             .child(self.title.clone())
-            .on_mouse_down(MouseButton::Left, |_, window, _cx| {
-                window.start_window_move();
-            })
-        // TODO: ダブルクリックで最大化・通常サイズ化
     }
 }
 
@@ -117,6 +173,7 @@ impl Default for TitleBar {
     fn default() -> Self {
         Self {
             title: std::env!("CARGO_PKG_NAME").to_title_case().into(),
+            flags: TitleBarFlags::default(),
         }
     }
 }

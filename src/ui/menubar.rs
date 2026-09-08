@@ -7,7 +7,10 @@ use gpui::prelude::FluentBuilder;
 use heck::ToTitleCase;
 use webbrowser;
 
-use crate::ui::titlebar::TitleBar;
+use crate::ui::titlebar::{
+    TitleBar,
+    TitleBarFlags,
+};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 enum MenuBarState {
@@ -127,15 +130,16 @@ impl Render for AboutWindow {
             .bg(rgb(0x202020))
             .flex()
             .flex_col()
-            .child(self.titlebar.clone())
+            .child(self.titlebar.clone()) // 最小化・最大化を無効化する -> TitleBarにフラグをもたせる (WindowControls?)
             .child(Self::render_content())
     }
 }
 
 impl AboutWindow {
     pub fn new(cx: &mut Context<Self>) -> Self {
-        let titlebar = cx.new(|_| TitleBar::new(format!(
-            "About {}", std::env!("CARGO_PKG_NAME")).to_title_case()
+        let titlebar = cx.new(|_| TitleBar::new(
+            format!("About {}", std::env!("CARGO_PKG_NAME").to_title_case()),
+            TitleBarFlags::CloseButton | TitleBarFlags::TitleName | TitleBarFlags::WindowMove,
         ));
 
         Self {
