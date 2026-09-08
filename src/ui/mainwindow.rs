@@ -32,7 +32,7 @@ impl Render for MainWindow {
 
 impl MainWindow {
     fn new(cx: &mut Context<Self>) -> Self {
-        let titlebar = cx.new(|_| TitleBar::new());
+        let titlebar = cx.new(|_| TitleBar::default());
         let menubar = cx.new(|_| MenuBar::new());
         Self {
             titlebar,

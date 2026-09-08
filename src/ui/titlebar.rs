@@ -5,7 +5,9 @@
 use gpui::*;
 use heck::ToTitleCase;
 
-pub struct TitleBar;
+pub struct TitleBar {
+    title: SharedString,
+}
 
 impl Render for TitleBar {
     fn render(&mut self, window: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
@@ -20,7 +22,7 @@ impl Render for TitleBar {
             .w_full()
             .pl_2()
             .gap_4()
-            .child(Self::render_drag_area(window, cx))
+            .child(self.render_drag_area(window, cx))
             .child(Self::render_minimize_button(window, cx))
             .child(Self::render_maximize_button(window, cx))
             .child(Self::render_close_button(window, cx))
@@ -28,8 +30,10 @@ impl Render for TitleBar {
 }
 
 impl TitleBar {
-    pub fn new() -> Self {
-        Self
+    pub fn new(title: impl Into<SharedString>) -> Self {
+        Self {
+            title: title.into(),
+        }
     }
 
     fn render_button(
@@ -81,17 +85,25 @@ impl TitleBar {
     /// # Render dragable area
     ///
     /// マウス移動可能なタイトル表示エリアを作成
-    fn render_drag_area(_window: &Window, _cx: &mut Context<Self>) -> impl IntoElement {
+    fn render_drag_area(&self, _window: &Window, _cx: &mut Context<Self>) -> impl IntoElement {
         div()
             .flex_1()
             .h_full()
             .flex()
             .items_center()
             .pl_3()
-            .child(std::env!("CARGO_PKG_NAME").to_title_case())
+            .child(self.title.clone())
             .on_mouse_down(MouseButton::Left, |_, window, _cx| {
                 window.start_window_move();
             })
         // TODO: ダブルクリックで最大化・通常サイズ化
+    }
+}
+
+impl Default for TitleBar {
+    fn default() -> Self {
+        Self {
+            title: std::env!("CARGO_PKG_NAME").to_title_case().into(),
+        }
     }
 }

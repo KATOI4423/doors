@@ -134,7 +134,9 @@ impl Render for AboutWindow {
 
 impl AboutWindow {
     pub fn new(cx: &mut Context<Self>) -> Self {
-        let titlebar = cx.new(|_| TitleBar::new());
+        let titlebar = cx.new(|_| TitleBar::new(format!(
+            "About {}", std::env!("CARGO_PKG_NAME")).to_title_case()
+        ));
 
         Self {
             titlebar,
