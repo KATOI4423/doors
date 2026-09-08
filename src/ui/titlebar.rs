@@ -36,6 +36,19 @@ impl TitleBar {
         }
     }
 
+    /// # Set Title
+    ///
+    /// usage:
+    /// ``` rust
+    /// titlebar.update(cx, |this, cx| {
+    ///     this.set_title("New Title", cx);
+    /// });
+    /// ```
+    pub fn set_title(&mut self, title: impl Into<SharedString>, cx: &mut Context<Self>) {
+        self.title = title.into();
+        cx.notify();
+    }
+
     fn render_button(
         _cx: &mut Context<Self>,
         id: impl Into<ElementId>,
