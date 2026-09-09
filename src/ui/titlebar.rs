@@ -20,6 +20,7 @@ bitflags! {
         const MinimizeButton =  0b0100;
         const TitleName  =      0b1000;
         const WindowMove =      0b0001_0000;
+        const DoubleClickMaximize = 0b0010_0000;
     }
 }
 
@@ -37,6 +38,7 @@ impl Default for TitleBarFlags {
         Self::MinimizeButton |
         Self::TitleName |
         Self::WindowMove |
+        Self::DoubleClickMaximize |
         Self::empty() // Keep the trailing `|` style for minimal diffs.
     }
 }
@@ -61,9 +63,14 @@ impl Render for TitleBar {
         if self.flags.contains(TitleBarFlags::WindowMove) {
             title = Self::setup_window_move(title, cx);
         }
+        if self.flags.contains(TitleBarFlags::DoubleClickMaximize) {
+            title = title.on_mouse_down(MouseButton::Left, cx.listener(|_, event: &MouseDownEvent, window, _| {
+                if event.click_count == 2 {
+                    window.zoom_window();
+                }
+            }));
+        }
         content = content.child(title);
-
-        // TODO: ダブルクリックで最大化・通常サイズ化
 
         if self.flags.intersects(
             TitleBarFlags::MinimizeButton | TitleBarFlags::MaximizeButton | TitleBarFlags::CloseButton
