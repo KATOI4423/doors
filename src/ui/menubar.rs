@@ -130,7 +130,7 @@ impl Render for AboutWindow {
             .bg(rgb(0x202020))
             .flex()
             .flex_col()
-            .child(self.titlebar.clone()) // 最小化・最大化を無効化する -> TitleBarにフラグをもたせる (WindowControls?)
+            .child(self.titlebar.clone())
             .child(Self::render_content())
     }
 }
