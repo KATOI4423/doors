@@ -18,7 +18,6 @@ bitflags! {
         const MaximizeButton =  0b0010;
         const MinimizeButton =  0b0100;
         const TitleName  =      0b1000;
-        /// # TitleName の BIT が立っていない場合は無効
         const WindowMove =      0b0001_0000;
     }
 }
