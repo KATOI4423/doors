@@ -93,7 +93,7 @@ impl TitleBar {
     fn render_button(
         _cx: &mut Context<Self>,
         id: impl Into<ElementId>,
-        icon: impl IntoElement,
+        icon_path: impl Into<SharedString>,
         listener: impl Fn(&ClickEvent, &mut Window, &mut App) + 'static,
     ) -> impl IntoElement {
         div()
@@ -102,12 +102,17 @@ impl TitleBar {
             .flex()
             .items_center()
             .justify_center()
-            .child(icon)
+            .child(
+                svg()
+                    .path(icon_path)
+                    .size(px(16.0))
+                    .text_color(rgb(0xffffff))
+            )
             .on_click(listener)
     }
 
     fn render_minimize_button(_window: &Window, _cx: &mut Context<Self>) -> impl IntoElement {
-        Self::render_button(_cx, "minimize", "−", |_, window, _cx| {
+        Self::render_button(_cx, "minimize", "icons/window-minimize.svg", |_, window, _cx| {
             window.minimize_window();
         })
     }
@@ -116,22 +121,20 @@ impl TitleBar {
     ///
     /// 最大化 / 通常サイズ の切り替えボタンを作成する
     fn render_maximize_button(window: &Window, _cx: &mut Context<Self>) -> impl IntoElement {
-        // TODO: アイコンのSVG化
-        let icon = if window.is_maximized() {
-            "❐"
+        let path = if window.is_maximized() {
+            "icons/window-restore.svg"
         } else {
-            "▢"
+            "icons/window-maximize.svg"
         };
 
-        Self::render_button(_cx, "maximize", icon, |_, window, _cx| {
+        Self::render_button(_cx, "maximize", path, |_, window, _cx| {
             // 通常サイズのときは最大化, 最大サイズのときは通常サイズ化になる
             window.zoom_window();
         })
     }
 
     fn render_close_button(_window: &Window, _cx: &mut Context<Self>) -> impl IntoElement {
-        // TODO: アイコンのSVG化
-        Self::render_button(_cx, "close", "✕", |_, window, _cx| {
+        Self::render_button(_cx, "close", "icons/window-close.svg", |_, window, _cx| {
             window.remove_window();
         })
     }
