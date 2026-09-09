@@ -9,6 +9,7 @@ use heck::ToTitleCase;
 pub struct TitleBar {
     title: SharedString,
     flags: TitleBarFlags,
+    states: TitleBarStates,
 }
 
 bitflags! {
@@ -19,6 +20,13 @@ bitflags! {
         const MinimizeButton =  0b0100;
         const TitleName  =      0b1000;
         const WindowMove =      0b0001_0000;
+    }
+}
+
+bitflags! {
+    #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+    struct TitleBarStates: u32 {
+        const Movable   = 0b0001;
     }
 }
 
@@ -51,9 +59,7 @@ impl Render for TitleBar {
             div().flex_1()
         };
         if self.flags.contains(TitleBarFlags::WindowMove) {
-            title = title.on_mouse_down(MouseButton::Left, |_, window, _cx| {
-                window.start_window_move();
-            });
+            title = Self::setup_window_move(title, cx);
         }
         content = content.child(title);
 
@@ -74,6 +80,7 @@ impl TitleBar {
         Self {
             title: title.into(),
             flags,
+            states: TitleBarStates::empty(),
         }
     }
 
@@ -88,6 +95,23 @@ impl TitleBar {
     pub fn set_title(&mut self, title: impl Into<SharedString>, cx: &mut Context<Self>) {
         self.title = title.into();
         cx.notify();
+    }
+
+    fn setup_window_move(title: Div, cx: & Context<Self>) -> Div {
+        title.on_mouse_down(MouseButton::Left, cx.listener(|this, _, _, _| {
+            this.states = this.states | TitleBarStates::Movable;
+        }))
+        .on_mouse_move(cx.listener(|this, _, window, _| {
+            if this.states.contains(TitleBarStates::Movable) {
+                window.start_window_move();
+            }
+        }))
+        .on_mouse_up(MouseButton::Left, cx.listener(|this, _, _, _| {
+            this.states = this.states - TitleBarStates::Movable;
+        }))
+        .on_mouse_up_out(MouseButton::Left, cx.listener(|this, _, _, _| {
+            this.states = this.states - TitleBarStates::Movable;
+        }))
     }
 
     fn render_button(
@@ -176,6 +200,7 @@ impl Default for TitleBar {
         Self {
             title: std::env!("CARGO_PKG_NAME").to_title_case().into(),
             flags: TitleBarFlags::default(),
+            states: TitleBarStates::empty(),
         }
     }
 }
