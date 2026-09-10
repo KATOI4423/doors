@@ -177,13 +177,13 @@ impl TitleBar {
             .gap_4();
 
         if self.flags.contains(TitleBarFlags::MinimizeButton) {
-            controls = controls.child(Self::render_minimize_button(window, cx))
+            controls = controls.child(Self::render_minimize_button(window, cx));
         }
         if self.flags.contains(TitleBarFlags::MaximizeButton) {
-            controls = controls.child(Self::render_maximize_button(window, cx))
+            controls = controls.child(Self::render_maximize_button(window, cx));
         }
         if self.flags.contains(TitleBarFlags::CloseButton) {
-            controls = controls.child(Self::render_close_button(window, cx))
+            controls = controls.child(Self::render_close_button(window, cx));
         }
 
         controls
