@@ -5,12 +5,10 @@
 use gpui::*;
 use rust_embed::RustEmbed;
 
-use crate::ui::menubar::MenuBar;
 use crate::ui::titlebar::TitleBar;
 
 pub struct MainWindow {
     titlebar: Entity<TitleBar>,
-    menubar: Entity<MenuBar>,
 }
 
 impl Render for MainWindow {
@@ -25,8 +23,12 @@ impl Render for MainWindow {
             .bg(rgb(0xffffff) /* White */)
             .items_center()
             .flex_col()
+            .on_mouse_down(MouseButton::Left, cx.listener(|this, _, _, cx| {
+                this.titlebar.update(cx, |titlebar, cx| {
+                    titlebar.close_setting_pulldown(cx);
+                });
+            }))
             .child(self.titlebar.clone())
-            .child(self.menubar.clone())
             .child(MainWindow::render_main_content())
     }
 }
@@ -34,10 +36,8 @@ impl Render for MainWindow {
 impl MainWindow {
     fn new(cx: &mut Context<Self>) -> Self {
         let titlebar = cx.new(|_| TitleBar::default());
-        let menubar = cx.new(|_| MenuBar::new());
         Self {
             titlebar,
-            menubar,
         }
     }
 
@@ -45,7 +45,7 @@ impl MainWindow {
     ///
     /// MainWindowに必要なActionと、その他のUIで必要なActionをまとめて登録する
     fn register_actions(cx: &mut App) {
-        MenuBar::register_actions(cx);
+        TitleBar::register_actions(cx);
     }
 
     pub fn start() {
