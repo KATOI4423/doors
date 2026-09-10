@@ -52,7 +52,6 @@ impl MainWindow {
         Application::new()
             .with_assets(Assets)
             .run(|cx| {
-                eprintln!("GPUI compositer: {}", gpui::guess_compositor());
                 MainWindow::register_actions(cx);
 
                 if let Err(e) = cx.open_window(
@@ -84,7 +83,6 @@ struct Assets;
 
 impl AssetSource for Assets {
     fn load(&self, path: &str) -> Result<Option<std::borrow::Cow<'static, [u8]>>> {
-        eprintln!("AssetSource::load: {path}");
         Ok(Self::get(path).map(|file| file.data))
     }
 
