@@ -252,7 +252,7 @@ impl TitleBar {
             .border_color(rgb(0x505050))
             .flex()
             .flex_col()
-            .child("Setting 1")
+            .child(self.render_tabset(cx))
             .child(Self::render_horizontal_bar())
             .child(self.render_readme(cx))
             .child(self.render_version(cx))
@@ -260,6 +260,17 @@ impl TitleBar {
 
     fn render_horizontal_bar() -> impl IntoElement {
         div().h(px(2.0)).w_full().bg(rgb(0x444444))
+    }
+
+    fn render_tabset(&self, cx: &mut Context<Self>) -> impl IntoElement {
+        div().id("tabset")
+            .px_3()
+            .py_2()
+            .child("Tab Set")
+            .on_click(cx.listener(|this, _, window, cx| {
+                this.close_setting_pulldown(cx);
+                todo!();
+            }))
     }
 
     fn render_readme(&self, cx: &mut Context<Self>) -> impl IntoElement {
