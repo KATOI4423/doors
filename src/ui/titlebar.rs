@@ -254,6 +254,8 @@ impl TitleBar {
             .flex_col()
             .child(self.render_tabset(cx))
             .child(Self::render_horizontal_bar())
+            .child(self.render_keybind(cx))
+            .child(Self::render_horizontal_bar())
             .child(self.render_readme(cx))
             .child(self.render_version(cx))
     }
@@ -267,6 +269,17 @@ impl TitleBar {
             .px_3()
             .py_2()
             .child("Tab Set")
+            .on_click(cx.listener(|this, _, window, cx| {
+                this.close_setting_pulldown(cx);
+                todo!();
+            }))
+    }
+
+    fn render_keybind(&self, cx: &mut Context<Self>) -> impl IntoElement {
+        div().id("keybind")
+            .px_3()
+            .py_2()
+            .child("Key Bind")
             .on_click(cx.listener(|this, _, window, cx| {
                 this.close_setting_pulldown(cx);
                 todo!();
