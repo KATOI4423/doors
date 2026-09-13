@@ -20,7 +20,6 @@ impl Render for MainWindow {
         div()
             .size_full()
             .flex()
-            .bg(rgb(0xffffff) /* White */)
             .items_center()
             .flex_col()
             .on_mouse_down(MouseButton::Left, cx.listener(|this, _, _, cx| {
@@ -28,13 +27,38 @@ impl Render for MainWindow {
                     titlebar.close_setting_pulldown(cx);
                 });
             }))
-            .child(self.titlebar.clone())
-            .child(MainWindow::render_main_content())
+            // Window の少し外側でも ResizeHandlers が動作しているように見せるため、
+            // Window の内容を inset で少し内側に移動させ、透明な縁を設ける
+            .child(
+                div()
+                    .absolute()
+                    // 最大化時はResizeHandlersのための余白を描画する必要がないため、 px(0.0) とする
+                    .inset(
+                        if window.is_maximized() {
+                            px(0.0)
+                        } else {
+                            px(Self::TRANSPARENT_EDGE_SIZE)
+                        }
+                    )
+                    .bg(rgb(0xffffff))
+                    .flex()
+                    .flex_col()
+                    .items_center()
+                    .child(self.titlebar.clone())
+                    .child(MainWindow::render_main_content())
+            )
             .child(Self::render_resize_handles())
     }
 }
 
 impl MainWindow {
+    /// ResizeHandles の幅
+    const HANDLER_PIXEL_SIZE: f32 = 16.0;
+
+    /// ResizeHandles が Window の少し外側でも動作しているように見せかけるための、透明な縁の幅
+    const TRANSPARENT_EDGE_SIZE: f32 = Self::HANDLER_PIXEL_SIZE / 2.0;
+
+
     fn new(cx: &mut Context<Self>) -> Self {
         let titlebar = cx.new(|_| TitleBar::default());
         Self {
@@ -98,7 +122,6 @@ impl MainWindow {
 
     fn render_resize_handle(edge: ResizeEdge) -> impl IntoElement {
         // 共通部分
-        const HANDLER_PIXEL_SIZE: f32 = 12.0;
         let cursor_style = match edge {
             ResizeEdge::Top | ResizeEdge::Bottom => CursorStyle::ResizeUpDown,
             ResizeEdge::Left | ResizeEdge::Right => CursorStyle::ResizeLeftRight,
@@ -116,44 +139,44 @@ impl MainWindow {
         match edge {
             ResizeEdge::Top => div
                 .top_0()
-                .left(px(HANDLER_PIXEL_SIZE))
-                .right(px(HANDLER_PIXEL_SIZE))
-                .h(px(HANDLER_PIXEL_SIZE)),
+                .left(px(Self::HANDLER_PIXEL_SIZE))
+                .right(px(Self::HANDLER_PIXEL_SIZE))
+                .h(px(Self::HANDLER_PIXEL_SIZE)),
             ResizeEdge::Bottom => div
                 .bottom_0()
-                .left(px(HANDLER_PIXEL_SIZE))
-                .right(px(HANDLER_PIXEL_SIZE))
-                .h(px(HANDLER_PIXEL_SIZE)),
+                .left(px(Self::HANDLER_PIXEL_SIZE))
+                .right(px(Self::HANDLER_PIXEL_SIZE))
+                .h(px(Self::HANDLER_PIXEL_SIZE)),
             ResizeEdge::Left => div
                 .left_0()
-                .top(px(HANDLER_PIXEL_SIZE))
-                .bottom(px(HANDLER_PIXEL_SIZE))
-                .w(px(HANDLER_PIXEL_SIZE)),
+                .top(px(Self::HANDLER_PIXEL_SIZE))
+                .bottom(px(Self::HANDLER_PIXEL_SIZE))
+                .w(px(Self::HANDLER_PIXEL_SIZE)),
             ResizeEdge::Right => div
                 .right_0()
-                .top(px(HANDLER_PIXEL_SIZE))
-                .bottom(px(HANDLER_PIXEL_SIZE))
-                .w(px(HANDLER_PIXEL_SIZE)),
+                .top(px(Self::HANDLER_PIXEL_SIZE))
+                .bottom(px(Self::HANDLER_PIXEL_SIZE))
+                .w(px(Self::HANDLER_PIXEL_SIZE)),
             ResizeEdge::TopLeft => div
                 .top_0()
                 .left_0()
-                .h(px(HANDLER_PIXEL_SIZE))
-                .w(px(HANDLER_PIXEL_SIZE)),
+                .h(px(Self::HANDLER_PIXEL_SIZE))
+                .w(px(Self::HANDLER_PIXEL_SIZE)),
             ResizeEdge::TopRight => div
                 .top_0()
                 .right_0()
-                .h(px(HANDLER_PIXEL_SIZE))
-                .w(px(HANDLER_PIXEL_SIZE)),
+                .h(px(Self::HANDLER_PIXEL_SIZE))
+                .w(px(Self::HANDLER_PIXEL_SIZE)),
             ResizeEdge::BottomLeft => div
                 .bottom_0()
                 .left_0()
-                .h(px(HANDLER_PIXEL_SIZE))
-                .w(px(HANDLER_PIXEL_SIZE)),
+                .h(px(Self::HANDLER_PIXEL_SIZE))
+                .w(px(Self::HANDLER_PIXEL_SIZE)),
             ResizeEdge::BottomRight => div
                 .bottom_0()
                 .right_0()
-                .h(px(HANDLER_PIXEL_SIZE))
-                .w(px(HANDLER_PIXEL_SIZE)),
+                .h(px(Self::HANDLER_PIXEL_SIZE))
+                .w(px(Self::HANDLER_PIXEL_SIZE)),
         }
     }
 }
