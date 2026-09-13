@@ -252,6 +252,9 @@ impl TitleBar {
             .border_color(rgb(0x505050))
             .flex()
             .flex_col()
+            .on_mouse_down(MouseButton::Left, |_, _, cx| {
+                cx.stop_propagation();
+            })
             .child(self.render_tabset(cx))
             .child(Self::render_horizontal_bar())
             .child(self.render_keybind(cx))
