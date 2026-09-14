@@ -5,10 +5,12 @@
 use gpui::*;
 use rust_embed::RustEmbed;
 
+use crate::ui::filelist::FileList;
 use crate::ui::titlebar::TitleBar;
 
 pub struct MainWindow {
     titlebar: Entity<TitleBar>,
+    filelist: Entity<FileList>,
 }
 
 impl Render for MainWindow {
@@ -45,7 +47,7 @@ impl Render for MainWindow {
                     .rounded_lg()
                     .items_center()
                     .child(self.titlebar.clone())
-                    .child(MainWindow::render_main_content())
+                    .child(self.filelist.clone())
             )
             .child(Self::render_resize_handles())
     }
@@ -60,9 +62,15 @@ impl MainWindow {
 
 
     fn new(cx: &mut Context<Self>) -> Self {
+        let Some(home) = dirs::home_dir() else {
+            eprintln!("Failed to get HOME directory");
+            panic!()
+        };
         let titlebar = cx.new(|_| TitleBar::default());
+        let filelist = cx.new(|_| FileList::new(home));
         Self {
             titlebar,
+            filelist,
         }
     }
 
@@ -93,15 +101,6 @@ impl MainWindow {
                     eprintln!("Failed to open window: {}", e);
                 }
             });
-    }
-
-    fn render_main_content() -> impl IntoElement {
-        div()
-            .flex()
-            .h_full()
-            .w_full()
-            .bg(rgb(0xffffff))
-            .child("Main Content")
     }
 
     /// # Render Resize Handlers
