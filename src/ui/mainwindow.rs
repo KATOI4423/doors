@@ -43,6 +43,7 @@ impl Render for MainWindow {
                     .bg(rgb(0xffffff))
                     .flex()
                     .flex_col()
+                    .rounded_lg()
                     .items_center()
                     .child(self.titlebar.clone())
                     .child(MainWindow::render_main_content())

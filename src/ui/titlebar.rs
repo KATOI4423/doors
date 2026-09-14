@@ -51,6 +51,7 @@ impl Render for TitleBar {
         let mut content = div()
             .flex()
             .flex_row()
+            .rounded_t_lg()
             .bg(rgb(0x000000))
             .text_color(rgb(0xeeeeee))
             .h_8()
@@ -337,6 +338,7 @@ impl Render for AboutWindow {
             .bg(rgb(0x202020))
             .flex()
             .flex_col()
+            .rounded_lg()
             .child(self.titlebar.clone())
             .child(Self::render_content())
     }
