@@ -403,17 +403,17 @@ impl AboutWindow {
             .child(
                 div()
                     .whitespace_nowrap()
-                    .child(format!("Built at {}", std::env!("VERGEN_BUILD_TIMESTAMP")))
-            )
-            .child(
-                div()
-                    .whitespace_nowrap()
                     .child(format!("Commit: {}", std::option_env!("VERGEN_GIT_SHA").unwrap_or("unknown")))
             )
             .child(
                 div()
                     .whitespace_nowrap()
-                    .child(format!("by Rust {}", std::env!("VERGEN_RUSTC_SEMVER")))
+                    .child(format!("Built Time: {}", std::env!("VERGEN_BUILD_TIMESTAMP")))
+            )
+            .child(
+                div()
+                    .whitespace_nowrap()
+                    .child(format!("Rust Version: {}", std::env!("VERGEN_RUSTC_SEMVER")))
             )
     }
 }
