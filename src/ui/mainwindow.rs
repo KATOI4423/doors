@@ -40,7 +40,6 @@ impl Render for MainWindow {
                             px(Self::TRANSPARENT_EDGE_SIZE)
                         }
                     )
-                    .bg(rgb(0xffffff))
                     .flex()
                     .flex_col()
                     .rounded_lg()
@@ -99,6 +98,9 @@ impl MainWindow {
     fn render_main_content() -> impl IntoElement {
         div()
             .flex()
+            .h_full()
+            .w_full()
+            .bg(rgb(0xffffff))
             .child("Main Content")
     }
 
