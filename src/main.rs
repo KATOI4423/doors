@@ -2,6 +2,7 @@
 //!
 //! Entry point for the Doors application.
 
+mod api;
 mod ui;
 
 fn main() {

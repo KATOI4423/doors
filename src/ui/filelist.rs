@@ -3,20 +3,33 @@
 //! Show the file list with those information
 
 use std::collections::VecDeque;
-use std::path::PathBuf;
+use std::path::{
+    Path,
+    PathBuf,
+};
 
+use gpui_component::IndexPath;
 use gpui_component::input::{
     Input,
     InputEvent,
+    InputState,
 };
-use gpui_kit::base::input::InputState;
+use gpui_component::label::Label;
+use gpui_component::list::{
+    ListDelegate,
+    ListState,
+    ListItem,
+};
 use gpui_kit::*;
+
+use crate::api::file;
 
 pub struct FileList {
     current: PathBuf,
     back: VecDeque<PathBuf>,
     forward: VecDeque<PathBuf>,
     path_input: Entity<InputState>,
+    list: Entity<ListState<FileListDelegate>>,
 }
 
 impl Render for FileList {
@@ -27,6 +40,7 @@ impl Render for FileList {
             .rounded_b_lg()
             .bg(rgb(0x202020))
             .child(self.render_toolbar(window, cx))
+            .child(self.list.clone())
     }
 }
 
@@ -37,12 +51,17 @@ impl FileList {
             InputState::new(window, cx)
                 .default_value(path.to_string_lossy())
         });
+        let delegate = FileListDelegate::new(&path);
+        let list = cx.new(|cx| {
+            gpui_component::list::ListState::new(delegate, window, cx)
+        });
 
         let filelist = Self {
             current: path,
             back: VecDeque::default(), // TODO: 履歴復元機能を追加
             forward: VecDeque::default(), // TODO: 履歴復元機能を追加
             path_input,
+            list,
         };
 
         filelist.create_subscribe(window, cx);
@@ -186,6 +205,61 @@ impl FileList {
                 window.blur(cx);
             })
     }
+}
 
+#[derive(Debug, Default)]
+pub struct FileListDelegate {
+    entries: Vec<file::FileEntry>,
+    selected: Option<IndexPath>,
+}
 
+impl FileListDelegate {
+    pub fn new(path: &Path) -> Self {
+        let entries = match file::FileEntry::read_directory(path) {
+            Ok(entries) => entries,
+            Err(e) => {
+                eprintln!("Failed to get file entries from {}: {e}", path.display());
+                return Self::default();
+            }
+        };
+
+        Self {
+            entries,
+            selected: None,
+        }
+    }
+}
+
+impl ListDelegate for FileListDelegate {
+    type Item = ListItem;
+
+    fn items_count(&self, _section: usize, _cx: &App) -> usize {
+        self.entries.len()
+    }
+
+    fn render_item(
+        &mut self,
+        ix: base::IndexPath,
+        _window: &mut Window,
+        _cx: &mut Context<gpui_component::list::ListState<Self>>,
+    ) -> Option<Self::Item>
+    {
+        self.entries.get(ix.row).map(|entry| {
+            Self::Item::new(ix)
+                // TODO: ここにchildを追加しても、<div><p>name</p><p>size</p></div> となるだけだった。 ファイル名用のリスト、サイズ用のリスト等をそれぞれchildで親に追加する必要がある。
+                .child(Label::new(entry.name()))
+                .selected(Some(ix) == self.selected)
+        })
+    }
+
+    fn set_selected_index(
+        &mut self,
+        ix: Option<base::IndexPath>,
+        window: &mut Window,
+        cx: &mut Context<gpui_component::list::ListState<Self>>,
+    )
+    {
+        self.selected = ix;
+        cx.notify();
+    }
 }

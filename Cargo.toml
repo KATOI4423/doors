@@ -21,6 +21,7 @@ codegen-units = 1
 strip = "symbols"
 
 [dependencies]
+anyhow = "^1.0"
 bitflags = "^2.13.1"
 dirs = "^7.0.0"
 gpui-component = "^0.6.4"
