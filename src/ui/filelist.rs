@@ -181,7 +181,6 @@ impl FileList {
                     .appearance(true)
                     .focus_bordered(true)
                     .bg(rgb(0xe0e0e0))
-                    // .w_full()
             )
             .on_mouse_down_out(|_, window, cx| {
                 window.blur(cx);
