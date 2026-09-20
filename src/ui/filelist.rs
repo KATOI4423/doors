@@ -5,7 +5,7 @@
 use std::collections::VecDeque;
 use std::path::PathBuf;
 
-use gpui::*;
+use gpui_kit::*;
 
 pub struct FileList {
     current: PathBuf,

@@ -3,7 +3,8 @@
 //! Define the title bar for the Doors application.
 
 use bitflags::bitflags;
-use gpui::{prelude::FluentBuilder, *};
+use gpui_kit::*;
+use gpui_kit::prelude::FluentBuilder;
 use heck::ToTitleCase;
 
 pub struct TitleBar {

@@ -2,7 +2,7 @@
 //!
 //!
 
-use gpui::*;
+use gpui_kit::*;
 use rust_embed::RustEmbed;
 
 use crate::ui::filelist::FileList;
@@ -82,10 +82,16 @@ impl MainWindow {
     }
 
     pub fn start() {
-        Application::new()
+        application()
             .with_assets(Assets)
             .run(|cx| {
                 MainWindow::register_actions(cx);
+
+                let bounds = Bounds::centered(
+                    None,
+                    size(px(800.0), px(600.0)),
+                    cx,
+                );
 
                 if let Err(e) = cx.open_window(
                     // GNOME wayland や Ghostty など、 xdg-decoration を実装していない環境では、
@@ -94,6 +100,7 @@ impl MainWindow {
                     WindowOptions {
                         titlebar: None,
                         window_decorations: Some(WindowDecorations::Client),
+                        window_bounds: Some(WindowBounds::Windowed(bounds)),
                         ..Default::default()
                     },
                     |_, cx| cx.new(|cx| Self::new(cx)),
