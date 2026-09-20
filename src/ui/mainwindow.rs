@@ -2,6 +2,7 @@
 //!
 //!
 
+use gpui_component;
 use gpui_kit::*;
 use rust_embed::RustEmbed;
 
@@ -61,13 +62,13 @@ impl MainWindow {
     const TRANSPARENT_EDGE_SIZE: f32 = Self::HANDLER_PIXEL_SIZE / 2.0;
 
 
-    fn new(cx: &mut Context<Self>) -> Self {
+    fn new(window: &mut Window, cx: &mut Context<Self>) -> Self {
         let Some(home) = dirs::home_dir() else {
             eprintln!("Failed to get HOME directory");
             panic!()
         };
         let titlebar = cx.new(|_| TitleBar::default());
-        let filelist = cx.new(|_| FileList::new(home));
+        let filelist = cx.new(|cx| FileList::new(window, cx, home));
         Self {
             titlebar,
             filelist,
@@ -85,6 +86,7 @@ impl MainWindow {
         application()
             .with_assets(Assets)
             .run(|cx| {
+                gpui_component::init(cx);
                 MainWindow::register_actions(cx);
 
                 let bounds = Bounds::centered(
@@ -103,7 +105,7 @@ impl MainWindow {
                         window_bounds: Some(WindowBounds::Windowed(bounds)),
                         ..Default::default()
                     },
-                    |_, cx| cx.new(|cx| Self::new(cx)),
+                    |window, cx| cx.new(|cx| Self::new(window, cx)),
                 ) {
                     eprintln!("Failed to open window: {}", e);
                 }

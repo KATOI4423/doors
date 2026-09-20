@@ -1533,6 +1533,7 @@ dependencies = [
  "anyhow",
  "bitflags 2.13.1",
  "dirs 7.0.0",
+ "gpui-component",
  "gpui-kit",
  "heck 0.5.0",
  "rust-embed",

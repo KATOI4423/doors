@@ -5,12 +5,15 @@
 use std::collections::VecDeque;
 use std::path::PathBuf;
 
+use gpui_component::input::Input;
+use gpui_kit::base::input::InputState;
 use gpui_kit::*;
 
 pub struct FileList {
     current: PathBuf,
     back: VecDeque<PathBuf>,
     forward: VecDeque<PathBuf>,
+    path_input: Entity<InputState>,
 }
 
 impl Render for FileList {
@@ -25,11 +28,18 @@ impl Render for FileList {
 }
 
 impl FileList {
-    pub fn new(path: impl Into<PathBuf>) -> Self {
+    pub fn new(window: &mut Window, cx: &mut Context<Self>, path: impl Into<PathBuf>) -> Self {
+        let path = path.into();
+        let path_input = cx.new(|cx| {
+            InputState::new(window, cx)
+                .default_value(path.to_string_lossy())
+        });
+
         Self {
-            current: path.into(),
+            current: path,
             back: VecDeque::default(), // TODO: 履歴復元機能を追加
             forward: VecDeque::default(), // TODO: 履歴復元機能を追加
+            path_input,
         }
     }
 
@@ -45,6 +55,7 @@ impl FileList {
             .child(Self::render_front_button(window, cx))
             .child(Self::render_parent_button(window, cx))
             .child(Self::render_renew_button(window, cx))
+            .child(self.render_path_input(window, cx))
     }
 
     /// # Update Stack
@@ -131,4 +142,13 @@ impl FileList {
             eprintln!("Renew!");
         }))
     }
+
+    fn render_path_input(&self, window: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
+        Input::new(&self.path_input)
+            .appearance(true)
+            .bg(rgb(0xe0e0e0))
+            .w_full()
+    }
+
+
 }
