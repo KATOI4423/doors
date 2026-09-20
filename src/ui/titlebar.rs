@@ -336,12 +336,19 @@ impl Render for AboutWindow {
     fn render(&mut self, _window: &mut Window, _cx: &mut Context<Self>) -> impl IntoElement {
         div()
             .size_full()
-            .bg(rgb(0x202020))
-            .flex()
-            .flex_col()
-            .rounded_lg()
-            .child(self.titlebar.clone())
-            .child(Self::render_content())
+            .bg(rgba(0x00000000))
+            .p(px(8.0))
+            .child(
+                div()
+                    .size_full()
+                    .bg(rgb(0x202020))
+                    .flex()
+                    .flex_col()
+                    .rounded_lg()
+                    .shadow_md()
+                    .child(self.titlebar.clone())
+                    .child(Self::render_content())
+            )
     }
 }
 
@@ -386,6 +393,7 @@ impl AboutWindow {
             .justify_center()
             .gap_2()
             .text_color(rgb(0xeeeeee))
+            .rounded_b_lg()
             .child(
                 div()
                     .text_xl()

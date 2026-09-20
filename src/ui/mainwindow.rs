@@ -46,6 +46,7 @@ impl Render for MainWindow {
                     .flex()
                     .flex_col()
                     .rounded_lg()
+                    .shadow_md()
                     .items_center()
                     .child(self.titlebar.clone())
                     .child(self.filelist.clone())
