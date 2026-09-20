@@ -134,7 +134,6 @@ impl FileList {
                 return;
             };
 
-            dbg!(&back);
             Self::update_stack(&mut this.forward, this.current.clone());
             this.set_current_path(window, cx, back);
         }))
@@ -147,7 +146,6 @@ impl FileList {
                 return;
             };
 
-            dbg!(&forward);
             Self::update_stack(&mut this.back, this.current.clone());
             this.set_current_path(window, cx, forward);
         }))
@@ -163,7 +161,6 @@ impl FileList {
                 return;
             };
 
-            dbg!(&parent);
             this.forward.clear();
             Self::update_stack(&mut this.back, this.current.clone());
             this.set_current_path(window, cx, parent.to_owned());
