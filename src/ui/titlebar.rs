@@ -214,7 +214,7 @@ impl TitleBar {
         if self.flags.contains(TitleBarFlags::SettingButton) {
             controls = controls.child(Self::render_setting_button(window, cx))
                 .when(self.states.contains(TitleBarStates::SettingOpen), |this| {
-                    this.child(self.render_setting_pulldown(window, cx))
+                    this.child(deferred(self.render_setting_pulldown(window, cx)))
                 });
         }
 
