@@ -174,10 +174,18 @@ impl FileList {
     }
 
     fn render_path_input(&self, window: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
-        Input::new(&self.path_input)
-            .appearance(true)
-            .bg(rgb(0xe0e0e0))
+        div()
             .w_full()
+            .child(
+                Input::new(&self.path_input)
+                    .appearance(true)
+                    .focus_bordered(true)
+                    .bg(rgb(0xe0e0e0))
+                    // .w_full()
+            )
+            .on_mouse_down_out(|_, window, cx| {
+                window.blur(cx);
+            })
     }
 
 
