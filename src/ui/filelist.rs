@@ -38,13 +38,13 @@ enum FileListColumn {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-struct FileListColumnState {
+pub struct FileListColumnState {
     kind: FileListColumn,
     width: Pixels,
 }
 
 #[derive(Debug, Clone)]
-struct FileListColumns {
+pub struct FileListColumns {
     states: Vec<FileListColumnState>,
 }
 
