@@ -8,7 +8,10 @@ use std::path::{
     PathBuf,
 };
 
-use gpui_component::IndexPath;
+use gpui_component::{
+    IndexPath,
+    h_flex,
+};
 use gpui_component::input::{
     Input,
     InputEvent,
@@ -21,14 +24,71 @@ use gpui_component::list::{
     ListItem,
 };
 use gpui_kit::*;
+use strum::Display;
 
 use crate::api::file;
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Display)]
+enum FileListColumn {
+    #[strum(to_string="")] // ヘッダーに Icon の文字列は含めない
+    Icon,
+    Name,
+    Size,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+struct FileListColumnState {
+    kind: FileListColumn,
+    width: Pixels,
+}
+
+#[derive(Debug, Clone)]
+struct FileListColumns {
+    states: Vec<FileListColumnState>,
+}
+
+impl FromIterator<FileListColumnState> for FileListColumns {
+    fn from_iter<T: IntoIterator<Item = FileListColumnState>>(iter: T) -> Self {
+        Self {
+            states: iter.into_iter().collect(),
+        }
+    }
+}
+
+impl IntoIterator for FileListColumns {
+    type Item = FileListColumnState;
+    type IntoIter = std::vec::IntoIter<FileListColumnState>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.states.into_iter()
+    }
+}
+
+impl Default for FileListColumns {
+    fn default() -> Self {
+        FileListColumns::from_iter(vec![
+            FileListColumnState { kind: FileListColumn::Icon, width: px(32.0) },
+            FileListColumnState { kind: FileListColumn::Name, width: px(568.0) },
+            FileListColumnState { kind: FileListColumn::Size, width: px(200.0) },
+        ])
+    }
+}
+
+impl FileListColumns {
+    pub fn iter(&self) -> impl Iterator<Item = &FileListColumnState> + '_ {
+        self.states.iter()
+    }
+}
+
 
 pub struct FileList {
     current: PathBuf,
     back: VecDeque<PathBuf>,
     forward: VecDeque<PathBuf>,
     path_input: Entity<InputState>,
+
+    columns: Entity<FileListColumns>,
     list: Entity<ListState<FileListDelegate>>,
 }
 
@@ -37,9 +97,12 @@ impl Render for FileList {
         div()
             .h_full()
             .w_full()
+            .flex()
+            .flex_col()
             .rounded_b_lg()
             .bg(rgb(0x202020))
             .child(self.render_toolbar(window, cx))
+            .child(self.render_header(window, cx))
             .child(self.list.clone())
     }
 }
@@ -51,7 +114,12 @@ impl FileList {
             InputState::new(window, cx)
                 .default_value(path.to_string_lossy())
         });
-        let delegate = FileListDelegate::new(&path);
+
+        let columns = cx.new(|_cx| {
+            FileListColumns::default()
+        });
+
+        let delegate = FileListDelegate::new(&path, columns.clone());
         let list = cx.new(|cx| {
             gpui_component::list::ListState::new(delegate, window, cx)
         });
@@ -61,6 +129,8 @@ impl FileList {
             back: VecDeque::default(), // TODO: 履歴復元機能を追加
             forward: VecDeque::default(), // TODO: 履歴復元機能を追加
             path_input,
+
+            columns,
             list,
         };
 
@@ -205,25 +275,62 @@ impl FileList {
                 window.blur(cx);
             })
     }
+
+    fn render_header(&self, _window: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
+        let mut div = div()
+            .h_6()
+            .w_full()
+            .flex()
+            .flex_row()
+            .items_center()
+            .bg(rgb(0x181818))
+            .text_color(rgb(0xffffff));
+
+        for col in self.columns.read(cx).iter() {
+            div = div
+                .child(
+                    gpui_kit::div()
+                        .h_full()
+                        .w(col.width - px(1.0))
+                        .flex_shrink_0()
+                        .px_3()
+                        .child(col.kind.to_string())
+                ).child(
+                    gpui_kit::div()
+                        .h_full()
+                        .w(px(1.0))
+                        .flex_shrink_0()
+                        .bg(rgb(0x444444))
+                );
+        }
+
+        div
+    }
 }
 
-#[derive(Debug, Default)]
+#[derive(Debug, Clone)]
 pub struct FileListDelegate {
+    columns: Entity<FileListColumns>,
     entries: Vec<file::FileEntry>,
     selected: Option<IndexPath>,
 }
 
 impl FileListDelegate {
-    pub fn new(path: &Path) -> Self {
+    pub fn new(path: &Path, columns: Entity<FileListColumns>) -> Self {
         let entries = match file::FileEntry::read_directory(path) {
             Ok(entries) => entries,
             Err(e) => {
                 eprintln!("Failed to get file entries from {}: {e}", path.display());
-                return Self::default();
+                return Self {
+                    columns,
+                    entries: Vec::default(),
+                    selected: Option::default(),
+                };
             }
         };
 
         Self {
+            columns,
             entries,
             selected: None,
         }
@@ -241,14 +348,78 @@ impl ListDelegate for FileListDelegate {
         &mut self,
         ix: base::IndexPath,
         _window: &mut Window,
-        _cx: &mut Context<gpui_component::list::ListState<Self>>,
+        cx: &mut Context<gpui_component::list::ListState<Self>>,
     ) -> Option<Self::Item>
     {
+        const ROW_HEIGHT: Pixels = px(21.0);
+        let columns = self.columns.read(cx);
+        let icon_col = columns.iter().find(|elm| {
+            elm.kind == FileListColumn::Icon
+        })?;
+        let name_col = columns.iter().find(|elm| {
+            elm.kind == FileListColumn::Name
+        })?;
+        let size_col = columns.iter().find(|elm| {
+            elm.kind == FileListColumn::Size
+        })?;
+
         self.entries.get(ix.row).map(|entry| {
             Self::Item::new(ix)
-                // TODO: ここにchildを追加しても、<div><p>name</p><p>size</p></div> となるだけだった。 ファイル名用のリスト、サイズ用のリスト等をそれぞれchildで親に追加する必要がある。
-                .child(Label::new(entry.name()))
-                .selected(Some(ix) == self.selected)
+                .p_0()
+                .border_b_1()
+                .border_color(rgb(0x444444))
+                .child(
+                    h_flex()
+                        .w_full()
+                        .flex_shrink_0()
+                        .child(
+                            div()
+                                .flex()
+                                .flex_shrink_0()
+                                .h(ROW_HEIGHT)
+                                .w(icon_col.width)
+                                .border_r_1()
+                                .border_color(rgb(0x444444))
+                                .items_center()
+                                .justify_center()
+                                .child(
+                                    svg()
+                                        .path(entry.kind().icon_path().to_string_lossy())
+                                        .size(px(16.0))
+                                        .text_color(rgb(0xffffff))
+                                )
+                        )
+                        .child(
+                            div()
+                                .flex()
+                                .flex_shrink_0()
+                                .h(ROW_HEIGHT)
+                                .w(name_col.width)
+                                .border_r_1()
+                                .border_color(rgb(0x444444))
+                                .items_center()
+                                .px_3()
+                                .child(
+                                    Label::new(entry.name())
+                                        .text_color(rgb(0xffffff))
+                                )
+                        )
+                        .child(
+                            div()
+                                .flex()
+                                .flex_shrink_0()
+                                .h(ROW_HEIGHT)
+                                .w(size_col.width)
+                                .border_r_1()
+                                .border_color(rgb(0x444444))
+                                .items_center()
+                                .px_3()
+                                .child(
+                                    Label::new(entry.kind().size())
+                                        .text_color(rgb(0xffffff))
+                                )
+                        )
+                ).selected(Some(ix) == self.selected)
         })
     }
 

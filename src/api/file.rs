@@ -47,7 +47,7 @@ impl FileEntryKind {
 
         let mut size = match self {
             Self::File { size } => size.clone(),
-            Self::Directory => 0,
+            Self::Directory => return "".into(), // ディレクトリの場合はファイルサイズを表示しない
         } as f64;
         let mut unit = 0;
 
@@ -60,6 +60,13 @@ impl FileEntryKind {
             format!("{size:.0} {}", UNITS[unit])
         } else {
             format!("{size:.1} {}", UNITS[unit])
+        }
+    }
+
+    pub fn icon_path(&self) -> PathBuf {
+        match self {
+            Self::Directory => PathBuf::from("icons/folder.svg"),
+            Self::File { .. } => PathBuf::from("icons/file.svg"),
         }
     }
 }

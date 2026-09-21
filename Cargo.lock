@@ -1537,6 +1537,7 @@ dependencies = [
  "gpui-kit",
  "heck 0.5.0",
  "rust-embed",
+ "strum",
  "vergen",
  "vergen-gitcl",
  "webbrowser",
