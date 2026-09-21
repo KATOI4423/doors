@@ -257,12 +257,12 @@ impl FileList {
     }
 
     fn render_renew_button(_window: &Window, cx: &mut Context<Self>) -> impl IntoElement {
-        Self::render_button("renew", "icons/rotate.svg", cx.listener(|this, _, _, _| {
+        Self::render_button("renew", "icons/rotate.svg", cx.listener(|_this, _, _, _| {
             eprintln!("Renew!");
         }))
     }
 
-    fn render_path_input(&self, window: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
+    fn render_path_input(&self, _window: &mut Window, _cx: &mut Context<Self>) -> impl IntoElement {
         div()
             .w_full()
             .child(
@@ -426,7 +426,7 @@ impl ListDelegate for FileListDelegate {
     fn set_selected_index(
         &mut self,
         ix: Option<base::IndexPath>,
-        window: &mut Window,
+        _window: &mut Window,
         cx: &mut Context<gpui_component::list::ListState<Self>>,
     )
     {

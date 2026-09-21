@@ -274,7 +274,7 @@ impl TitleBar {
             .px_3()
             .py_2()
             .child("Tab Set")
-            .on_click(cx.listener(|this, _, window, cx| {
+            .on_click(cx.listener(|this, _, _window, cx| {
                 this.close_setting_pulldown(cx);
                 todo!();
             }))
@@ -285,7 +285,7 @@ impl TitleBar {
             .px_3()
             .py_2()
             .child("Key Bind")
-            .on_click(cx.listener(|this, _, window, cx| {
+            .on_click(cx.listener(|this, _, _window, cx| {
                 this.close_setting_pulldown(cx);
                 todo!();
             }))
